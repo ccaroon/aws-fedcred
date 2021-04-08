@@ -1,7 +1,4 @@
-try:
-    from configparser import NoOptionError, NoSectionError
-except ImportError:
-    from ConfigParser import NoOptionError, NoSectionError
+from configparser import NoOptionError, NoSectionError
 import json
 import requests
 import sys

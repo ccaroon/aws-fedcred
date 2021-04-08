@@ -1,13 +1,12 @@
-try:
-    from configparser import NoOptionError, NoSectionError
-except ImportError:
-    from ConfigParser import NoOptionError, NoSectionError
+import base64
+from configparser import NoOptionError, NoSectionError
 import re
 import requests
 import sys
 
 from bs4 import BeautifulSoup
 from fedcred import common
+from fedcred.config import Config
 from requests_ntlm import HttpNtlmAuth
 
 
@@ -16,7 +15,7 @@ class Adfs(object):
         self.config = config
         try:
             self.sslverification = self.config.getboolean(
-                common.DEFAULT_CONFIG_SECTION, 'sslverify')
+                Config.DEFAULT_SECTION, 'sslverify')
             self.idpurl = self.config.get('adfs', 'url')
             try:
                 self.ntlmauth = self.config.getboolean('adfs', 'ntlmauth')
@@ -26,7 +25,12 @@ class Adfs(object):
             sys.exit(e.message)
 
     def auth(self):
-        username, password = common.get_user_credentials()
+        token = self.config.get(Config.DEFAULT_SECTION, 'token', fallback=None)
+        if token:
+            creds = base64.b64decode(token).decode().rstrip()
+            username, password = creds.split(':')
+        else:
+            username, password = common.get_user_credentials()
 
         session = requests.Session()
         try:
@@ -70,7 +74,7 @@ class Adfs(object):
             try:
                 common.write_credentials(
                     self.config.get(
-                        common.DEFAULT_CONFIG_SECTION,
+                        Config.DEFAULT_SECTION,
                         'aws_credential_profile'
                     ),
                     sts_creds

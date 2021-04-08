@@ -1,14 +1,13 @@
 #!/usr/bin/env python
-
-from fedcred import common
-
+import os
+from fedcred.config import Config
 
 def main():
-    config = common.read_config()
-    if config.get(common.DEFAULT_CONFIG_SECTION, 'provider') == 'okta':
+    config = Config.get_instance()
+    if config.get(Config.DEFAULT_SECTION, 'provider') == 'okta':
         from fedcred.providers.okta import Okta
         Okta(config).auth()
-    if config.get(common.DEFAULT_CONFIG_SECTION, 'provider') == 'adfs':
+    if config.get(Config.DEFAULT_SECTION, 'provider') == 'adfs':
         from fedcred.providers.adfs import Adfs
         Adfs(config).auth()
 

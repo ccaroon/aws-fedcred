@@ -1,61 +1,46 @@
 import base64
 import boto3
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
+import configparser
 import getpass
 import os
 import sys
-
 import xml.etree.ElementTree as ET
 
+from termcolor import cprint, colored
 from bs4 import BeautifulSoup
 
+from fedcred.config import Config
 
-DEFAULT_CONFIG_SECTION = 'fedcred'
-DEFAULT_CONFIG_FILE = 'fedcred.config'
+def parse_account_arn(arn):
+    config = Config.get_instance()
+    pieces = arn.split(':')
+    
+    account_id = pieces[4]
+    role = pieces[5].split('/')[1].replace('ADFS-', '')
 
-
-def read_config():
-    CONFIG_PATH = '%s/%s' % (os.path.expanduser('~'), DEFAULT_CONFIG_FILE)
-    valid_providers = ['okta', 'adfs']
-    config = configparser.ConfigParser()
-    if not os.path.isfile(CONFIG_PATH):
-        config.add_section(DEFAULT_CONFIG_SECTION)
-        config.set(DEFAULT_CONFIG_SECTION, 'sslverify', 'True')
-        config.set(
-            DEFAULT_CONFIG_SECTION, 'aws_credential_profile', 'federated')
-        with open(CONFIG_PATH, 'w') as configfile:
-            config.write(configfile)
-    if os.path.isfile(CONFIG_PATH):
-        config.read(CONFIG_PATH)
-        if not config.has_section(DEFAULT_CONFIG_SECTION):
-            sys.exit(
-                "Default section '%s' is required." % (DEFAULT_CONFIG_SECTION,))
-        try:
-            if config.get(
-                    DEFAULT_CONFIG_SECTION, 'provider') not in valid_providers:
-                print("'%s' is not a valid authentication provider" % (
-                    config.get(DEFAULT_CONFIG_SECTION, 'provider'),))
-            return config
-        except configparser.NoOptionError:
-            sys.exit(
-                "Default section '%s' must have a 'provider' option" %
-                (DEFAULT_CONFIG_SECTION,)
-            )
-    else:
-        sys.exit("Could not find config file.")
+    data = {
+        'id': account_id,
+        'name': config.get('account_map', account_id, fallback=account_id),
+        'role': role
+    }
+    return data
 
 
-def get_user_credentials(prompt=None):
-    if prompt is None:
-        prompt_msg = 'Enter you username: '
-    try:
-        username = raw_input(prompt_msg).strip()
-    except NameError:
-        username = input(prompt_msg).strip()
-    password = getpass.getpass(prompt='Enter your password: ')
+def get_color(name):
+    config = Config.get_instance()
+    spec = config.get('colors', name, fallback='X-X-X').split('-',3)
+    return {
+        'fore': None if spec[0] == 'X' else spec[0],
+        'back': None if spec[1] == 'X' else spec[1],
+        'attrs': None if spec[2] == 'X' else spec[2].split(',')
+    }
+
+
+def get_user_credentials():
+    username = Config.get_instance().get(Config.DEFAULT_SECTION, 'username', fallback=None)
+    if username is None:
+        username = input('Enter you username: ').strip()
+    password = getpass.getpass(prompt=F"Enter password for '{username}': ")
     return username, password
 
 
@@ -100,24 +85,36 @@ def get_arns_from_assertion(assertion):
         arn_dict['SAMLAssertion'] = assertion
         parsed_roles.append(arn_dict)
 
+    role_choice = 0
     if len(parsed_roles) > 1:
-        print('\nPlease choose a Role you would like to assume:')
-        print('----------------------------------------------\n')
-        for i in range(0, len(parsed_roles)):
-            print('Role [ %s ]: %s' % (i, parsed_roles[i]['RoleArn']))
+        hdr = get_color('header')
+        cprint('\n---=== Your Roles ===---', hdr['fore'], hdr['back'], attrs=hdr['attrs'])
         print('\n')
-        role_choice_msg = 'Enter the role number you would like to assume: '
-        try:
-            role_choice = raw_input(role_choice_msg).strip()
-        except NameError:
-            role_choice = input(role_choice_msg).strip()
+        row1 = get_color('row1')
+        row2 = get_color('row2')
+        for i in range(0, len(parsed_roles)):
+            arn = parsed_roles[i]['RoleArn']
+            account_data = parse_account_arn(arn)
+            display_name = F"{account_data['name']:20} {account_data['role']:10} {account_data['id']:15}"
+            
+            color = row1 if i % 2 == 0 else row2
+            
+            cprint(F"Role [ {i:2} ]: {display_name}", color['fore'], color['back'], attrs=color['attrs'])
+        print('\n')
+        ftr = get_color('footer')
+        role_choice_msg = colored('Select a Role (q to quit): ', ftr['fore'], ftr['back'], attrs=ftr['attrs'])
+        role_choice = input(role_choice_msg).strip()
+    
+    if role_choice in ['q', 'Q']:
+        sys.exit("Exiting! No Role Assumed!")
     else:
-        role_choice = 0
-    role_choice = int(role_choice)
-    if role_choice > (len(parsed_roles) - 1):
-        sys.exit('Sorry, that is not a valid role choice.')
-    print('Success. You have obtained crentials for the assumed role of: %s' % (
-        parsed_roles[role_choice]['RoleArn'],))
+        role_choice = int(role_choice)
+        if role_choice > (len(parsed_roles) - 1):
+            sys.exit('Sorry, that is not a valid role choice.')
+        
+        print('Success. You have obtained credentials for the assumed role of: %s' % (
+            parsed_roles[role_choice]['RoleArn'],))
+    
     return parsed_roles[role_choice]
 
 
@@ -167,4 +164,4 @@ def write_credentials(profile, creds):
 
     with open(aws_creds_path, 'w') as configfile:
         config.write(configfile)
-    print('Crentials successfully written to %s' % (aws_creds_path,))
+    print('Credentials successfully written to %s' % (aws_creds_path,))
