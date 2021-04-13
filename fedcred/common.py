@@ -85,6 +85,13 @@ def get_arns_from_assertion(assertion):
         arn_dict['SAMLAssertion'] = assertion
         parsed_roles.append(arn_dict)
 
+    # Add some extra account data to each parsed_role
+    for role in parsed_roles:
+        role['account'] = parse_account_arn(role['RoleArn'])
+
+    # Sort parsed_roles by 'name'
+    parsed_roles.sort(key=lambda item: item['account']['name'])
+
     role_choice = 0
     if len(parsed_roles) > 1:
         hdr = get_color('header')
@@ -94,7 +101,7 @@ def get_arns_from_assertion(assertion):
         row2 = get_color('row2')
         for i in range(0, len(parsed_roles)):
             arn = parsed_roles[i]['RoleArn']
-            account_data = parse_account_arn(arn)
+            account_data = parsed_roles[i]['account']
             display_name = F"{account_data['name']:20} {account_data['role']:10} {account_data['id']:15}"
             
             color = row1 if i % 2 == 0 else row2
