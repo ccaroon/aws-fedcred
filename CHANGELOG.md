@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2021-04-23
+* Can now specify an account name on the command-line to log directly into that account.
+* Added `--profile` / `-p` option to specify/override the name of the AWS Profile to write.
+
 ## 2021-04-13
 * Account list sorting...
   - Sorted by "name" as given in the `[account_map]` or ID if no `[account_map]` exists

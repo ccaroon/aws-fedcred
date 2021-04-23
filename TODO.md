@@ -1,10 +1,11 @@
 # ToDo
 
 * [ ] List accounts
-* [ ] Log in to an account directly: `fedcred clhm-non-prod-admin`
+* [x] Log in to an account directly: `fedcred clhm-non-prod-admin`
+* [x] Option to set profile name instead of always using `default`
 * [x] Store username in config file
 * [x] Sort list by...
-  - account name
+  - [x] account name
   - account id
 * [ ] Only support Python3
   - [ ] use 'f' strings

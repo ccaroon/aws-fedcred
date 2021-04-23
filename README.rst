@@ -71,7 +71,33 @@ The config file can exist at ``~/.config/fedcred.ini`` or ``~/fedcred.config``
 
 Usage
 -----
-
 .. code-block:: sh
 
+    usage: fedcred [-h] [--profile PROFILE] [account]
+
+    Obtain AWS API Credentials when using Federation/Identity Providers
+
+    positional arguments:
+    account
+
+    optional arguments:
+    -h, --help            show this help message and exit
+    --profile PROFILE, -p PROFILE
+                            Write creds to this named profile
+
+Examples
+~~~~~~~~
+.. code-block:: sh
+
+    # Manually choose role from list and write to your default profile name
     $ fedcred
+
+    # Attempt to log in to <account_name> and write to your default profile name
+    # <account_name> from ``[account_map]``
+    $ fedcred <account_name> 
+
+    # Manually choose role from list and write to a profile name 'voodoo_ranger'
+    $ fedcred --profile voodoo_ranger
+
+    # Attempt to log in to "The Collective" account and write to a profile name "locutus"
+    $ fedcred "The Collective" -p locutus

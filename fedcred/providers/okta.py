@@ -7,8 +7,9 @@ from fedcred import common
 
 
 class Okta(object):
-    def __init__(self, config):
+    def __init__(self, config, args):
         self.config = config
+        self.args = args
         try:
             self.okta_org = self.config.get('okta', 'organization')
             self.auth_url = "https://" + self.okta_org + "/api/v1/authn"
@@ -51,16 +52,13 @@ class Okta(object):
         session = requests.Session()
         saml = session.get(self.app_url + "?onetimetoken=" + session_token)
         assertion = common.get_saml_assertion(saml)
-        arn_dict = common.get_arns_from_assertion(assertion)
+        arn_dict = common.get_arns_from_assertion(assertion, self.args)
         sts_creds = common.get_sts_creds(arn_dict)
         try:
             common.write_credentials(
-                self.config.get(
-                    common.DEFAULT_CONFIG_SECTION,
-                    'aws_credential_profile'
-                ),
+                self.args.profile,
                 sts_creds
-                )
+            )
         except (NoOptionError, NoSectionError) as e:
             sys.exit(e.message)
 

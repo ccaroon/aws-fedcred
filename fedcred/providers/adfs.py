@@ -11,8 +11,9 @@ from requests_ntlm import HttpNtlmAuth
 
 
 class Adfs(object):
-    def __init__(self, config):
+    def __init__(self, config, args):
         self.config = config
+        self.args = args
         try:
             self.sslverification = self.config.getboolean(
                 Config.DEFAULT_SECTION, 'sslverify')
@@ -69,16 +70,13 @@ class Adfs(object):
                          'Status Code: %s' % (response.status_code))
 
             assertion = common.get_saml_assertion(response)
-            arn_to_assume = common.get_arns_from_assertion(assertion)
+            arn_to_assume = common.get_arns_from_assertion(assertion, self.args.account)
             sts_creds = common.get_sts_creds(arn_to_assume)
             try:
                 common.write_credentials(
-                    self.config.get(
-                        Config.DEFAULT_SECTION,
-                        'aws_credential_profile'
-                    ),
+                    self.args.profile,
                     sts_creds
-                    )
+                )
             except (NoOptionError, NoSectionError) as e:
                 sys.exit(e.message)
         except requests.exceptions.ConnectionError as e:

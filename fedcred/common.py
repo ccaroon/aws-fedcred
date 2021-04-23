@@ -56,7 +56,7 @@ def get_saml_assertion(response):
             return inputtag.get('value')
 
 
-def get_arns_from_assertion(assertion):
+def get_arns_from_assertion(assertion, account_name=None):
     """Parses a base64 encoded SAML Assertion and extracts the role and
     principle ARNs to be used when making a request to STS.
     Returns a dict with RoleArn, PrincipalArn & SAMLAssertion that can be
@@ -92,36 +92,44 @@ def get_arns_from_assertion(assertion):
     # Sort parsed_roles by 'name'
     parsed_roles.sort(key=lambda item: item['account']['name'])
 
-    role_choice = 0
-    if len(parsed_roles) > 1:
-        hdr = get_color('header')
-        cprint('\n---=== Your Roles ===---', hdr['fore'], hdr['back'], attrs=hdr['attrs'])
-        print('\n')
-        row1 = get_color('row1')
-        row2 = get_color('row2')
-        for i in range(0, len(parsed_roles)):
-            arn = parsed_roles[i]['RoleArn']
-            account_data = parsed_roles[i]['account']
-            display_name = F"{account_data['name']:20} {account_data['role']:10} {account_data['id']:15}"
-            
-            color = row1 if i % 2 == 0 else row2
-            
-            cprint(F"Role [ {i:2} ]: {display_name}", color['fore'], color['back'], attrs=color['attrs'])
-        print('\n')
-        ftr = get_color('footer')
-        role_choice_msg = colored('Select a Role (q to quit): ', ftr['fore'], ftr['back'], attrs=ftr['attrs'])
-        role_choice = input(role_choice_msg).strip()
-    
-    if role_choice in ['q', 'Q']:
-        sys.exit("Exiting! No Role Assumed!")
-    else:
-        role_choice = int(role_choice)
-        if role_choice > (len(parsed_roles) - 1):
-            sys.exit('Sorry, that is not a valid role choice.')
+    # Find account by name as specified on command line
+    role_choice = None
+    if account_name:
+        for index, role in enumerate(parsed_roles):
+            if role['account']['name'] == account_name:
+                role_choice = index
+                break
+
+    # account_name not provided or not found
+    if role_choice is None:
+        role_choice = 0
+        if len(parsed_roles) > 1:
+            hdr = get_color('header')
+            cprint('\n---=== Your Roles ===---', hdr['fore'], hdr['back'], attrs=hdr['attrs'])
+            print('\n')
+            row1 = get_color('row1')
+            row2 = get_color('row2')
+            for i in range(0, len(parsed_roles)):
+                arn = parsed_roles[i]['RoleArn']
+                account_data = parsed_roles[i]['account']
+                display_name = F"{account_data['name']:20} {account_data['role']:10} {account_data['id']:15}"
+                
+                color = row1 if i % 2 == 0 else row2
+                
+                cprint(F"Role [ {i:2} ]: {display_name}", color['fore'], color['back'], attrs=color['attrs'])
+            print('\n')
+            ftr = get_color('footer')
+            role_choice_msg = colored('Select a Role (q to quit): ', ftr['fore'], ftr['back'], attrs=ftr['attrs'])
+            role_choice = input(role_choice_msg).strip()
         
-        print('Success. You have obtained credentials for the assumed role of: %s' % (
-            parsed_roles[role_choice]['RoleArn'],))
-    
+        if role_choice in ['q', 'Q']:
+            sys.exit("Exiting! No Role Assumed!")
+        else:
+            role_choice = int(role_choice)
+            if role_choice > (len(parsed_roles) - 1):
+                sys.exit('Sorry, that is not a valid role choice.')
+            
+    print(F"Success. You have obtained credentials for the assumed role of: {parsed_roles[role_choice]['RoleArn']}")
     return parsed_roles[role_choice]
 
 
@@ -171,4 +179,4 @@ def write_credentials(profile, creds):
 
     with open(aws_creds_path, 'w') as configfile:
         config.write(configfile)
-    print('Credentials successfully written to %s' % (aws_creds_path,))
+    print(F"Credentials successfully written to the '{profile}' profile of {aws_creds_path}")
