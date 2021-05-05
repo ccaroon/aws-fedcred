@@ -145,7 +145,7 @@ def get_sts_creds(arn):
 
 
 def write_credentials(profile, creds):
-    aws_creds_path = '%s/.aws/credentials' % (os.path.expanduser('~'),)
+    aws_creds_path = F"{os.path.expanduser('~')}/.aws/credentials"
     config = configparser.ConfigParser()
     creds_folder = os.path.dirname(aws_creds_path)
     if not os.path.isdir(creds_folder):

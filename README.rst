@@ -73,7 +73,7 @@ Usage
 -----
 .. code-block:: sh
 
-    usage: fedcred [-h] [--profile PROFILE] [account]
+    usage: fedcred [-h] [--version] [--profile PROFILE] [account]
 
     Obtain AWS API Credentials when using Federation/Identity Providers
 
@@ -82,6 +82,7 @@ Usage
 
     optional arguments:
     -h, --help            show this help message and exit
+    --version, -v         show program's version number and exit
     --profile PROFILE, -p PROFILE
                             Write creds to this named profile
 
@@ -96,8 +97,8 @@ Examples
     # <account_name> from ``[account_map]``
     $ fedcred <account_name> 
 
-    # Manually choose role from list and write to a profile name 'voodoo_ranger'
+    # Manually choose role from list and write to a profile named 'voodoo_ranger'
     $ fedcred --profile voodoo_ranger
 
-    # Attempt to log in to "The Collective" account and write to a profile name "locutus"
+    # Attempt to log in to "The Collective" account and write to a profile named "locutus"
     $ fedcred "The Collective" -p locutus

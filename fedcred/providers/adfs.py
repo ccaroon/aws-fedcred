@@ -66,8 +66,8 @@ class Adfs(object):
             response = session.post(action, data=payload_dict,
                                     verify=self.sslverification)
             if response.status_code != 200:
-                sys.exit('There was a problem logging in via ADFS. HTTP '
-                         'Status Code: %s' % (response.status_code))
+                sys.exit(F'There was a problem logging in via ADFS. HTTP '
+                         'Status Code: {response.status_code}')
 
             assertion = common.get_saml_assertion(response)
             arn_to_assume = common.get_arns_from_assertion(assertion, self.args.account)
@@ -80,4 +80,4 @@ class Adfs(object):
             except (NoOptionError, NoSectionError) as e:
                 sys.exit(e.message)
         except requests.exceptions.ConnectionError as e:
-            sys.exit('Could not connect to %s. %s' % (self.idpurl, e))
+            sys.exit(F'Could not connect to {self.idpurl}. {e}')

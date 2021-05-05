@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2021-05-05
+* Completed? porting to Python3
+* Added `--version` option
+
 ## 2021-04-23
 * Can now specify an account name on the command-line to log directly into that account.
 * Added `--profile` / `-p` option to specify/override the name of the AWS Profile to write.

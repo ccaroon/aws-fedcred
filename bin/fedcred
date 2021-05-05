@@ -2,6 +2,7 @@
 import argparse
 import os
 from fedcred.config import Config
+from fedcred.version import VERSION
 
 def main():
     config = Config.get_instance()
@@ -12,9 +13,11 @@ def main():
     parser = argparse.ArgumentParser(
         description='Obtain AWS API Credentials when using Federation/Identity Providers'
     )
+    parser.add_argument('--version', '-v', action='version', version=F'%(prog)s {VERSION}')
+    
     parser.add_argument("account", nargs='?', type=str, default=None)
-    parser.add_argument("--profile", "-p", 
-        type=str, 
+    parser.add_argument("--profile", "-p",
+        type=str,
         default=default_profile,
         help="Write creds to this named profile"
     )

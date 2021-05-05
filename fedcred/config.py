@@ -39,17 +39,15 @@ class Config:
             config.read(path)
             if not config.has_section(cls.DEFAULT_SECTION):
                 sys.exit(
-                    "Default section '%s' is required." % (cls.DEFAULT_SECTION,))
+                    F"Default section '{cls.DEFAULT_SECTION}' is required.")
             try:
                 if config.get(
                         cls.DEFAULT_SECTION, 'provider') not in cls.VALID_PROVIDERS:
-                    print("'%s' is not a valid authentication provider" % (
-                        config.get(cls.DEFAULT_SECTION, 'provider'),))
+                    print(F"'{config.get(cls.DEFAULT_SECTION, 'provider')}' is not a valid authentication provider")
                 return config
             except configparser.NoOptionError:
                 sys.exit(
-                    "Default section '%s' must have a 'provider' option" %
-                    (cls.DEFAULT_SECTION,)
+                    F"Default section '{cls.DEFAULT_SECTION}' must have a 'provider' option"
                 )
         else:
             sys.exit("Could not find config file.")

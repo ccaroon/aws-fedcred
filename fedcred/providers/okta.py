@@ -29,7 +29,7 @@ class Okta(object):
             data=json.dumps({"stateToken": state_token})
         )
         try:
-            passcode_input = raw_input
+            passcode_input = input
         except NameError:
             passcode_input = input
         passcode = passcode_input("Please provide your one-time passcode: ")
@@ -43,8 +43,7 @@ class Okta(object):
                  })
         )
         if response.status_code != 200:
-            sys.exit("Second factor verification failed: %s" %
-                     (json.loads(response.text)['errorSummary']),)
+            sys.exit(F"Second factor verification failed: {json.loads(response.text)['errorSummary']}")
         return response
 
     def process_success(self, response):
@@ -78,18 +77,16 @@ class Okta(object):
 
         if response.status_code != 200:
             e = json.loads(response.text)
-            sys.exit("Primary authentication failed: %s. Error code: %s" %
-                     (e['errorSummary'], e['errorCode']))
+            sys.exit(F"Primary authentication failed: {e['errorSummary']}. Error code: {e['errorCode']}")
 
         auth_response = json.loads(response.text)
         if auth_response['status'] == 'MFA_REQUIRED':
             print("Please choose a second factor:\n")
             for i in range(0, len(auth_response['_embedded']['factors'])):
-                print("[%s] - %s" % (i,
-                      auth_response['_embedded']['factors'][i]['factorType']))
+                print(F"[{i}] - {auth_response['_embedded']['factors'][i]['factorType']}")
 
             try:
-                factor_input = raw_input
+                factor_input = input
             except NameError:
                 factor_input = input
             choice = int(factor_input("Chose a second factor: "))
@@ -107,9 +104,8 @@ class Okta(object):
             if json.loads(response.text)['status'] == 'SUCCESS':
                 self.process_success(response)
             else:
-                print("Authentication failed with status: %s" %
-                      (json.loads(response.text)['status'],))
+                print(F"Authentication failed with status: {json.loads(response.text)['status']}")
         elif auth_response['status'] == 'SUCCESS':
             self.process_success(response)
         else:
-            print("Unable to login: %s" % (auth_response['status'],))
+            print(F"Unable to login: {auth_response['status']}")
