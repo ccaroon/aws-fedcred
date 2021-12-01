@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2021-12-01
+* The `provider` can now be overridden on the command line: `fedcred adsf|okta|iam`
+* Added support for IAM accounts: `fedcred iam` or `fedcred iam ACCOUNT_NAME`
+  - IAM accounts should be configure in the `iam_accounts` section of the config
+* Changed the name of the `accounts_map` in the config/INI file to `adfs_accounts`
+
 ## 2021-05-05
 * Completed? porting to Python3
 * Added `--version` option

@@ -6,6 +6,7 @@ The following identity providers are currently supported:
 
 * Active Directory Federation Services (ADFS)
 * Okta
+* IAM Accounts - Uses your account's key & secret to generate a temporary session.
 
 Installation:
 -------------
@@ -32,7 +33,7 @@ The config file can exist at ``~/.config/fedcred.ini`` or ``~/fedcred.config``
 .. code-block:: ini
     
     [fedcred]
-    provider = {okta, adfs}
+    provider = {okta, adfs, iam}
     aws_credential_profile = default
     sslverify = True
     ; Store username here instead of having to type it in each time
@@ -62,22 +63,31 @@ The config file can exist at ``~/.config/fedcred.ini`` or ``~/fedcred.config``
 
     ; Map an account id to an easily identifiable string (i.e. account name)
     ; Optional
-    [account_map]
+    [adfs_accounts]
     ACCOUNT_1_ID = ACCOUNT_1_NAME
     ACCOUNT_2_ID = ACCOUNT_2_NAME
     ; ...
     ACCOUNT_N_ID = ACCOUNT_N_NAME
+
+    ; Map an easily identifiable string (i.e. account name) to an AWS Profile
+    ; Required to use IAM Accounts
+    [iam_accounts]
+    ACCOUNT_1_NAME = ACCOUNT_1_PROFILE
+    ACCOUNT_2_NAME = ACCOUNT_2_PROFILE
+    ; ...
+    ACCOUNT_N_NAME = ACCOUNT_N_PROFILE
     
 
 Usage
 -----
 .. code-block:: sh
 
-    usage: fedcred [-h] [--version] [--profile PROFILE] [account]
+    usage: fedcred [-h] [--version] [--profile PROFILE] [provider] [account]
 
     Obtain AWS API Credentials when using Federation/Identity Providers
 
     positional arguments:
+    provider              Override Provider to Use
     account
 
     optional arguments:
@@ -93,9 +103,13 @@ Examples
     # Manually choose role from list and write to your default profile name
     $ fedcred
 
-    # Attempt to log in to <account_name> and write to your default profile name
-    # <account_name> from ``[account_map]``
-    $ fedcred <account_name> 
+    # Attempt to log in to ADFS <account_name> and write to your default profile
+    # <account_name> from ``[adfs_accounts]``
+    $ fedcred adfs <account_name> 
+    
+    # Attempt to log in to IAM <account_name> and write to your default profile
+    # <account_name> from ``[iam_accounts]``
+    $ fedcred iam <account_name>
 
     # Manually choose role from list and write to a profile named 'voodoo_ranger'
     $ fedcred --profile voodoo_ranger

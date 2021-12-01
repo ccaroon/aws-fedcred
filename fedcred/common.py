@@ -20,7 +20,7 @@ def parse_account_arn(arn):
 
     data = {
         'id': account_id,
-        'name': config.get('account_map', account_id, fallback=account_id),
+        'name': config.get('adfs_accounts', account_id, fallback=account_id),
         'role': role
     }
     return data
@@ -105,7 +105,7 @@ def get_arns_from_assertion(assertion, account_name=None):
         role_choice = 0
         if len(parsed_roles) > 1:
             hdr = get_color('header')
-            cprint('\n---=== Your Roles ===---', hdr['fore'], hdr['back'], attrs=hdr['attrs'])
+            cprint('\n---=== ADFS Access ===---', hdr['fore'], hdr['back'], attrs=hdr['attrs'])
             print('\n')
             row1 = get_color('row1')
             row2 = get_color('row2')
